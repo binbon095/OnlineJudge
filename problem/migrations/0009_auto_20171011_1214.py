@@ -35,6 +35,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='problem',
+            name='model_solution',
+            field=django.contrib.postgres.fields.jsonb.JSONField(),
+        ),
+        migrations.AlterField(
+            model_name='problem',
             name='test_case_score',
             field=django.contrib.postgres.fields.jsonb.JSONField(),
         ),

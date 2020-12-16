@@ -80,6 +80,7 @@ class Migration(migrations.Migration):
                 ('hint', utils.models.RichTextField(blank=True, null=True)),
                 ('languages', jsonfield.fields.JSONField()),
                 ('template', jsonfield.fields.JSONField()),
+                ('model_solution', jsonfield.fields.JSONField()),
                 ('create_time', models.DateTimeField(auto_now_add=True)),
                 ('last_update_time', models.DateTimeField(blank=True, null=True)),
                 ('time_limit', models.IntegerField()),
