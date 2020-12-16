@@ -53,6 +53,7 @@ class Problem(models.Model):
     hint = RichTextField(null=True)
     languages = JSONField()
     template = JSONField()
+    model_solution = JSONField()
     create_time = models.DateTimeField(auto_now_add=True)
     # we can not use auto_now here
     last_update_time = models.DateTimeField(null=True)

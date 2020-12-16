@@ -150,6 +150,7 @@ class ExportProblemSerializer(serializers.ModelSerializer):
     hint = serializers.SerializerMethodField()
     spj = serializers.SerializerMethodField()
     template = serializers.SerializerMethodField()
+    model_solution = serializers.SerializerMethodField()
     source = serializers.SerializerMethodField()
     tags = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True)
 
@@ -194,7 +195,7 @@ class ExportProblemSerializer(serializers.ModelSerializer):
         fields = ("display_id", "title", "description", "tags",
                   "input_description", "output_description",
                   "test_case_score", "hint", "time_limit", "memory_limit", "samples",
-                  "template", "spj", "rule_type", "source", "template")
+                  "template", "model_solution", "spj", "rule_type", "source", "template")
 
 
 class AddContestProblemSerializer(serializers.Serializer):
@@ -250,6 +251,7 @@ class ImportProblemSerializer(serializers.Serializer):
     memory_limit = serializers.IntegerField(min_value=1, max_value=10240)
     samples = serializers.ListField(child=CreateSampleSerializer())
     template = serializers.DictField(child=TemplateSerializer())
+    model_solution = serializers.DictField(child=TemplateSerializer())
     spj = SPJSerializer(allow_null=True)
     rule_type = serializers.ChoiceField(choices=ProblemRuleType.choices())
     source = serializers.CharField(max_length=200, allow_blank=True, allow_null=True)
