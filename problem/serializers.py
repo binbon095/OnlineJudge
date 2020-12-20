@@ -232,9 +232,6 @@ class TemplateSerializer(serializers.Serializer):
     template = serializers.CharField()
     append = serializers.CharField()
 
-class ModelSolutionSerializer(serializers.Serializer):
-    code = serializers.CharField()
-
 class SPJSerializer(serializers.Serializer):
     code = serializers.CharField()
     language = SPJLanguageNameChoiceField()
@@ -257,7 +254,7 @@ class ImportProblemSerializer(serializers.Serializer):
     memory_limit = serializers.IntegerField(min_value=1, max_value=10240)
     samples = serializers.ListField(child=CreateSampleSerializer())
     template = serializers.DictField(child=TemplateSerializer())
-    model_solution = serializers.DictField(child=ModelSolutionSerializer())
+    model_solution = serializers.DictField()
     spj = SPJSerializer(allow_null=True)
     rule_type = serializers.ChoiceField(choices=ProblemRuleType.choices())
     source = serializers.CharField(max_length=200, allow_blank=True, allow_null=True)
