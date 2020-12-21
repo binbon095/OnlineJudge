@@ -32,7 +32,7 @@ from ..utils import TEMPLATE_BASE, build_problem_template
 
 
 class TestCaseZipProcessor(object):
-    def process_zip(self, uploaded_zip_file, spj, dir=""):
+    def process_zip(self, uploaded_zip_file, spj, dir="", problem_display_id = None):
         try:
             zip_file = zipfile.ZipFile(uploaded_zip_file, "r")
         except zipfile.BadZipFile:
@@ -42,7 +42,8 @@ class TestCaseZipProcessor(object):
         if not test_case_list:
             raise APIError("Empty file")
 
-        test_case_id = rand_str()
+        if not problem_display_id: test_case_id = rand_str()
+        else: test_case_id = problem_display_id + "_tc"
         test_case_dir = os.path.join(settings.TEST_CASE_DIR, test_case_id)
         os.mkdir(test_case_dir)
         os.chmod(test_case_dir, 0o710)
@@ -145,6 +146,15 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         return response
 
     def post(self, request):
+        
+        problem_id = request.GET.get("problem_id")
+        if not problem_id:
+            return self.error("Parameter error, problem_id is required")
+        try:
+            problem = Problem.objects.get(id=problem_id)
+        except Problem.DoesNotExist:
+            return self.error("Problem does not exists")
+        
         form = TestCaseUploadForm(request.POST, request.FILES)
         if form.is_valid():
             spj = form.cleaned_data["spj"] == "true"
@@ -155,7 +165,7 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         with open(zip_file, "wb") as f:
             for chunk in file:
                 f.write(chunk)
-        info, test_case_id = self.process_zip(zip_file, spj=spj)
+        info, test_case_id = self.process_zip(zip_file, spj=spj, problem_id=problem._id)
         os.remove(zip_file)
         return self.success({"id": test_case_id, "info": info, "spj": spj})
 
@@ -581,7 +591,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
 
                         problem_info["display_id"] = problem_info["display_id"][:24]
                         for k, v in problem_info["template"].items():
-                            problem_info["template"][k] = build_problem_template(v["prepend"], v["template"],
+                            」＝「¿problem_info["template"][k] = build_problem_template(v["prepend"], v["template"],
                                                                                  v["append"])
 
                         spj = problem_info["spj"] is not None
@@ -589,7 +599,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                         test_case_score = problem_info["test_case_score"]
 
                         # process test case
-                        _, test_case_id = self.process_zip(tmp_file, spj=spj, dir=f"{i}/testcase/")
+                        _, test_case_id = self.process_zip(tmp_file, spj=spj, dir=f"{i}/testcase/", problem_id=problem_info["display_id"])
 
                         problem_obj = Problem.objects.create(_id=problem_info["display_id"],
                                                              title=problem_info["title"],
