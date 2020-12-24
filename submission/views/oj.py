@@ -117,17 +117,14 @@ class SubmissionAPI(APIView):
         except Submission.DoesNotExist:
             return self.error("Submission doesn't exist")
             
-        if "result" in request.data:
-            submission.result = request.data["result"]
-            submission.save(update_fields=["result"])
-            
-        else:
-            if not submission.check_user_permission(request.user, check_share=False):
-                return self.error("No permission to share the submission")
-            if submission.contest and submission.contest.status == ContestStatus.CONTEST_UNDERWAY:
-                return self.error("Can not share submission now")
-            submission.shared = request.data["shared"]
-            submission.save(update_fields=["shared"])
+
+        if not submission.check_user_permission(request.user, check_share=False):
+            return self.error("No permission to share the submission")
+#        if submission.contest and submission.contest.status == ContestStatus.CONTEST_UNDERWAY:
+#            return self.error("Can not share submission now")
+        submission.result = request.data["result"]            
+        submission.shared = request.data["shared"]
+        submission.save(update_fields=["shared", "result"])
             
         return self.success()
 
