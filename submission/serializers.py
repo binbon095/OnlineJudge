@@ -14,9 +14,6 @@ class CreateSubmissionSerializer(serializers.Serializer):
 class ShareSubmissionSerializer(serializers.Serializer):
     id = serializers.CharField()
     shared = serializers.BooleanField()
-
-class ManualJudgeSerializer(serializers.Serializer):
-    id = serializers.CharField()
     result = serializers.IntegerField()
 
 
