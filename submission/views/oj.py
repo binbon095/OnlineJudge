@@ -18,7 +18,7 @@ from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerialize
 
 class SubmissionAPI(APIView):
     def throttling(self, request):
-        # 使用 open_api 的请求暂不做限制
+        # 雿輻 open_api ��窈瘙����
         auth_method = getattr(request, "auth_method", "")
         if auth_method == "api_key":
             return
@@ -102,7 +102,7 @@ class SubmissionAPI(APIView):
             submission_data = SubmissionModelSerializer(submission).data
         else:
             submission_data = SubmissionSafeModelSerializer(submission).data
-        # 是否有权限取消共享
+        # ��������鈭�
         submission_data["can_unshare"] = submission.check_user_permission(request.user, check_share=False)
         return self.success(submission_data)
 
@@ -116,12 +116,19 @@ class SubmissionAPI(APIView):
             submission = Submission.objects.select_related("problem").get(id=request.data["id"])
         except Submission.DoesNotExist:
             return self.error("Submission doesn't exist")
-        if not submission.check_user_permission(request.user, check_share=False):
-            return self.error("No permission to share the submission")
-        if submission.contest and submission.contest.status == ContestStatus.CONTEST_UNDERWAY:
-            return self.error("Can not share submission now")
-        submission.shared = request.data["shared"]
-        submission.save(update_fields=["shared"])
+        
+        if "shared" in request.data:
+            if not submission.check_user_permission(request.user, check_share=False):
+                return self.error("No permission to share the submission")
+            if submission.contest and submission.contest.status == ContestStatus.CONTEST_UNDERWAY:
+                return self.error("Can not share submission now")
+            submission.shared = request.data["shared"]
+            submission.save(update_fields=["shared"])
+        
+        if "result" in request.data:
+            submission.result = request.data["result"]
+            submission.save(update_fields=["result"])
+            
         return self.success()
 
 
@@ -184,7 +191,7 @@ class ContestSubmissionListAPI(APIView):
         if contest.status != ContestStatus.CONTEST_NOT_START:
             submissions = submissions.filter(create_time__gte=contest.start_time)
 
-        # 封榜的时候只能看到自己的提交
+        # 撠�������撌梁��漱
         if contest.rule_type == ContestRuleType.ACM:
             if not contest.real_time_rank and not request.user.is_contest_admin(contest):
                 submissions = submissions.filter(user_id=request.user.id)
