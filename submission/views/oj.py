@@ -116,7 +116,7 @@ class SubmissionAPI(APIView):
             submission = Submission.objects.select_related("problem").get(id=request.data["id"])
         except Submission.DoesNotExist:
             return self.error("Submission doesn't exist")
-        if "result" in request.data:
+        if request.data["cmd"] == "updateResult":
             submission.result = request.data["result"]
             submission.save(update_fields=["result"])
             

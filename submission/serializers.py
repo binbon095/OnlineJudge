@@ -12,6 +12,7 @@ class CreateSubmissionSerializer(serializers.Serializer):
 
 
 class ShareSubmissionSerializer(serializers.Serializer):
+    cmd = serializers.CharField()
     id = serializers.CharField()
     shared = serializers.BooleanField()
     result = serializers.IntegerField()
