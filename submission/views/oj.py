@@ -12,7 +12,7 @@ from utils.captcha import Captcha
 from utils.throttling import TokenBucket
 from ..models import Submission
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer,
-                           ShareSubmissionSerializer)
+                           ShareSubmissionSerializer, ManualJudgeSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
 
 
@@ -116,15 +116,24 @@ class SubmissionAPI(APIView):
             submission = Submission.objects.select_related("problem").get(id=request.data["id"])
         except Submission.DoesNotExist:
             return self.error("Submission doesn't exist")
-            
-
         if not submission.check_user_permission(request.user, check_share=False):
             return self.error("No permission to share the submission")
-#        if submission.contest and submission.contest.status == ContestStatus.CONTEST_UNDERWAY:
-#            return self.error("Can not share submission now")
-        submission.result = request.data["result"]            
+        if submission.contest and submission.contest.status == ContestStatus.CONTEST_UNDERWAY:
+            return self.error("Can not share submission now")
         submission.shared = request.data["shared"]
-        submission.save(update_fields=["shared", "result"])
+        submission.save(update_fields=["shared"])            
+        return self.success()
+
+    @validate_serializer(ManualJudgeSerializer)
+    @login_required
+    def manual_judge(self, request):
+        try:
+            submission = Submission.objects.select_related("problem").get(id=request.data["id"])
+        except Submission.DoesNotExist:
+            return self.error("Submission doesn't exist")
+        
+        submission.result = request.data["result"]            
+        submission.save(update_fields=["result"])
             
         return self.success()
 
