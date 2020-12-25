@@ -127,8 +127,8 @@ class SubmissionAPI(APIView):
             problem_info[request.data["result"]] = problem_info.get(request.data["result"], 0) + 1
             problem.save(update_fields=["accepted_number", "statistic_info"])
             
-            problem_id = str(problem.id)
-            profile = User.objects.select_related("userprofile").get(id=submission.user_id).userprofile
+            problem_id = problem.id
+            profile = User.objects.select_related("userprofile").get(username=submission.username).userprofile
             if problem.rule_type == ProblemRuleType.ACM:
                 acm_problems_status = profile.acm_problems_status.get("problems", {})
                 if acm_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
