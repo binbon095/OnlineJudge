@@ -130,8 +130,10 @@ class SubmissionAPI(APIView):
             problem_id = problem.id
             user = User.objects.get(id=submission.user_id)
             profile = user.userprofile
+            problemkey = "problems"
+            if submission.contest: problemkey = "contest_problems"
             if problem.rule_type == ProblemRuleType.ACM:
-                acm_problems_status = profile.acm_problems_status.get("problems", {})
+                acm_problems_status = profile.acm_problems_status.get(problemkey, {})
                 if acm_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
                     acm_problems_status[problem_id]["status"] = request.data["result"]
                     if request.data["result"] == JudgeStatus.ACCEPTED:
@@ -140,9 +142,10 @@ class SubmissionAPI(APIView):
                 profile.save(update_fields=["accepted_number", "acm_problems_status"])
 
             else:
-                oi_problems_status = profile.oi_problems_status.get("problems", {})
+                oi_problems_status = profile.oi_problems_status.get(problemkey, {})
+                
                 score = submission.statistic_info["score"]
-                return self.error("|".join(oi_problems_status.keys()))
+#                 return self.error("|".join(oi_problems_status.keys())) --->  emptyy
                 if oi_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
                     # minus last time score, add this tim score
                     profile.add_score(this_time_score=score,
