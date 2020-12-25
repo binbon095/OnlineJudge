@@ -5,6 +5,7 @@ from contest.models import ContestStatus, ContestRuleType
 from judge.tasks import judge_task
 from options.options import SysOptions
 # from judge.dispatcher import JudgeDispatcher
+from account.models import User, UserProfile
 from problem.models import Problem, ProblemRuleType
 from utils.api import APIView, validate_serializer
 from utils.cache import cache
@@ -127,7 +128,7 @@ class SubmissionAPI(APIView):
             problem.save(update_fields=["accepted_number", "statistic_info"])
             
             problem_id = problem.id
-            profile = Submission.objects.select_related("user_profile").get(id=request.data["id"]).userprofile
+            profile = User.objects.select_related("user_profile").get(id=submission.user_id).userprofile
             if problem.rule_type == ProblemRuleType.ACM:
                 acm_problems_status = profile.acm_problems_status.get("problems", {})
                 if acm_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
