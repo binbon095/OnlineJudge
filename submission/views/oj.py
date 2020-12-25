@@ -118,13 +118,13 @@ class SubmissionAPI(APIView):
             return self.error("Submission doesn't exist")
         if request.data["cmd"] == "updateResult":
 
-            problem = Problem.objects.select_for_update().get(id=request.data["id"])
-            if submission.result != JudgeStatus.ACCEPTED and request.data["result"] == JudgeStatus.ACCEPTED:
-                problem.accepted_number += 1
-            problem_info = problem.statistic_info
-            problem_info[submission.result] = problem_info.get(submission.result, 1) - 1
-            problem_info[request.data["result"]] = problem_info.get(request.data["result"], 0) + 1
-            problem.save(update_fields=["accepted_number", "statistic_info"])
+#             problem = Problem.objects.select_for_update().get(id=request.data["id"])
+#             if submission.result != JudgeStatus.ACCEPTED and request.data["result"] == JudgeStatus.ACCEPTED:
+#                 problem.accepted_number += 1
+#             problem_info = problem.statistic_info
+#             problem_info[submission.result] = problem_info.get(submission.result, 1) - 1
+#             problem_info[request.data["result"]] = problem_info.get(request.data["result"], 0) + 1
+#             problem.save(update_fields=["accepted_number", "statistic_info"])
             
             profile = User.objects.select_for_update().get(id=submission.user_id).userprofile
             if problem.rule_type == ProblemRuleType.ACM:
