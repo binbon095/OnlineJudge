@@ -142,6 +142,7 @@ class SubmissionAPI(APIView):
             else:
                 oi_problems_status = profile.oi_problems_status.get("problems", {})
                 score = submission.statistic_info["score"]
+                return self.error("|".join(oi_problems_status.keys()))
                 if oi_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
                     # minus last time score, add this tim score
                     profile.add_score(this_time_score=score,
