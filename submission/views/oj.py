@@ -117,6 +117,39 @@ class SubmissionAPI(APIView):
         except Submission.DoesNotExist:
             return self.error("Submission doesn't exist")
         if request.data["cmd"] == "updateResult":
+
+            problem = Problem.objects.select_for_update().get(id=request.data["id"])
+            if submission.result != JudgeStatus.ACCEPTED and request.data["result"] == JudgeStatus.ACCEPTED:
+                problem.accepted_number += 1
+            problem_info = problem.statistic_info
+            problem_info[submission.result] = problem_info.get(submission.result, 1) - 1
+            problem_info[request.data["result"]] = problem_info.get(request.data["result"], 0) + 1
+            problem.save(update_fields=["accepted_number", "statistic_info"])
+            
+            profile = User.objects.select_for_update().get(id=submission.user_id).userprofile
+            if problem.rule_type == ProblemRuleType.ACM:
+                acm_problems_status = profile.acm_problems_status.get("problems", {})
+                if acm_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
+                    acm_problems_status[problem_id]["status"] = request.data["result"]
+                    if request.data["result"] == JudgeStatus.ACCEPTED:
+                        profile.accepted_number += 1
+                profile.acm_problems_status["problems"] = acm_problems_status
+                profile.save(update_fields=["accepted_number", "acm_problems_status"])
+
+            else:
+                oi_problems_status = profile.oi_problems_status.get("problems", {})
+                score = submission.statistic_info["score"]
+                if oi_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
+                    # minus last time score, add this tim score
+                    profile.add_score(this_time_score=score,
+                                      last_time_score=oi_problems_status[problem_id]["score"])
+                    oi_problems_status[problem_id]["score"] = score
+                    oi_problems_status[problem_id]["status"] = request.data["result"]
+                    if request.data["result"] == JudgeStatus.ACCEPTED:
+                        profile.accepted_number += 1
+                profile.oi_problems_status["problems"] = oi_problems_status
+                profile.save(update_fields=["accepted_number", "oi_problems_status"])
+            
             submission.result = request.data["result"]
             submission.save(update_fields=["result"])
             
