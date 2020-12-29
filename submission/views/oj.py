@@ -158,7 +158,7 @@ class SubmissionAPI(APIView):
                 if request.data["result"] == JudgeStatus.ACCEPTED:
                     profile.accepted_number += 1
             profile.oi_problems_status[problemkey] = oi_problem_status
-            profile.save(update_fields=["accepted_number", "oi_problem_status"])
+            profile.save(update_fields=["accepted_number", "oi_problems_status"])
             
             submission.result = request.data["result"]
             submission.save(update_fields=["result"])
