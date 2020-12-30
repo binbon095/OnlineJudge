@@ -250,7 +250,7 @@ class JudgeDispatcher(DispatcherBase):
 #             self.submission.statistic_info["score"] = 0
 # 
 #         elif status == JudgeStatus.WRONG_ANSWER:
-        logger.error("Binbon " + update_result)
+        logger.error("Binbon " + str(updated_result))
         self.submission.result = updated_result
         for i in range(len(submission.info["data"])):
             self.submission.info["data"][i]["result"] = status
