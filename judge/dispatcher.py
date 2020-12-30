@@ -250,7 +250,7 @@ class JudgeDispatcher(DispatcherBase):
 #             self.submission.statistic_info["score"] = 0
 # 
 #         elif status == JudgeStatus.WRONG_ANSWER:
-
+        logger.error("Binbon " + update_result)
         self.submission.result = updated_result
         for i in range(len(submission.info["data"])):
             self.submission.info["data"][i]["result"] = status
@@ -258,11 +258,14 @@ class JudgeDispatcher(DispatcherBase):
                 self.submission.info["data"][i]["score"] = self.problem.test_case_score[i]["score"]
             else:
                 self.submission.info["data"][i]["score"] = 0
-                    
+        logger.error(self.submission.info)            
         if updated_result == JudgeStatus.ACCEPTED:
             self.submission.statistic_info["score"] = problem.total_score
         else:
-            self.submission.info["data"][i]["score"] = 0
+            self.submission.statistic_info["score"] = 0
+        logger.error(self.submission.statistic_info)            
+
+        self.submission.save()
 
 #         else:
 #             resp["data"].sort(key=lambda x: int(x["test_case"]))
@@ -277,7 +280,6 @@ class JudgeDispatcher(DispatcherBase):
 #                 self.submission.result = error_test_case[0]["result"]
 #             else:
 #                 self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
-        self.submission.save()
 
         if self.contest_id:
             if self.contest.status != ContestStatus.CONTEST_UNDERWAY or \
