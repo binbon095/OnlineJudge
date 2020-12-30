@@ -201,6 +201,102 @@ class JudgeDispatcher(DispatcherBase):
         # 至此判题结束，尝试处理任务队列中剩余的任务
         process_pending_task()
 
+    def manual_judge(self, updated_result):
+#         if status == JudgeStatus.MANUAL_JUDGING:
+#             language = self.submission.language
+#             sub_config = list(filter(lambda item: language == item["name"], SysOptions.languages))[0]
+#             spj_config = {}
+#             if self.problem.spj_code:
+#                 for lang in SysOptions.spj_languages:
+#                     if lang["name"] == self.problem.spj_language:
+#                         spj_config = lang["spj"]
+#                         break
+#      
+#             if language in self.problem.template:
+#                 template = parse_problem_template(self.problem.template[language])
+#                 code = f"{template['prepend']}\n{self.submission.code}\n{template['append']}"
+#             else:
+#                 code = self.submission.code
+#      
+#             data = {
+#                 "language_config": sub_config["config"],
+#                 "src": code,
+#                 "max_cpu_time": self.problem.time_limit,
+#                 "max_memory": 1024 * 1024 * self.problem.memory_limit,
+#                 "test_case_id": self.problem.test_case_id,
+#                 "output": False,
+#                 "spj_version": self.problem.spj_version,
+#                 "spj_config": spj_config.get("config"),
+#                 "spj_compile_config": spj_config.get("compile"),
+#                 "spj_src": self.problem.spj_code,
+#                 "io_mode": self.problem.io_mode
+#             }
+#      
+#             with ChooseJudgeServer() as server:
+#                 if not server:
+#                     data = {"submission_id": self.submission.id, "problem_id": self.problem.id}
+#                     cache.lpush(CacheKey.waiting_queue, json.dumps(data))
+#                     return
+#                 Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.JUDGING)
+#                 resp = self._request(urljoin(server.service_url, "/judge"), data=data)
+#      
+#             if not resp:
+#                 Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.SYSTEM_ERROR)
+#                 return
+# 
+# #             if resp["err"]:
+#             self.submission.result = status
+#             self.submission.statistic_info["err_info"] = resp["data"]
+#             self.submission.statistic_info["score"] = 0
+# 
+#         elif status == JudgeStatus.WRONG_ANSWER:
+
+        self.submission.result = updated_result
+        for i in range(len(submission.info["data"])):
+            self.submission.info["data"][i]["result"] = status
+            if updated_result == JudgeStatus.ACCEPTED:
+                self.submission.info["data"][i]["score"] = self.problem.test_case_score[i]["score"]
+            else:
+                self.submission.info["data"][i]["score"] = 0
+                    
+        if updated_result == JudgeStatus.ACCEPTED:
+            self.submission.statistic_info["score"] = problem.total_score
+        else:
+            self.submission.info["data"][i]["score"] = 0
+
+#         else:
+#             resp["data"].sort(key=lambda x: int(x["test_case"]))
+#             self.submission.info = resp
+#             self._compute_statistic_info(resp["data"])
+#             error_test_case = list(filter(lambda case: case["result"] != 0, resp["data"]))
+#             # ACM模式下,多个测试点全部正确则AC，否则取第一个错误的测试点的状态
+#             # OI模式下, 若多个测试点全部正确则AC， 若全部错误则取第一个错误测试点状态，否则为部分正确
+#             if not error_test_case:
+#                 self.submission.result = JudgeStatus.ACCEPTED
+#             elif self.problem.rule_type == ProblemRuleType.ACM or len(error_test_case) == len(resp["data"]):
+#                 self.submission.result = error_test_case[0]["result"]
+#             else:
+#                 self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
+        self.submission.save()
+
+        if self.contest_id:
+            if self.contest.status != ContestStatus.CONTEST_UNDERWAY or \
+                    User.objects.get(id=self.submission.user_id).is_contest_admin(self.contest):
+                logger.info(
+                    "Contest debug mode, id: " + str(self.contest_id) + ", submission id: " + self.submission.id)
+                return
+            with transaction.atomic():
+                self.update_contest_problem_status()
+                self.update_contest_rank()
+        else:
+            if self.last_result:
+                self.update_problem_status_rejudge()
+            else:
+                self.update_problem_status()
+
+#         # 至此判题结束，尝试处理任务队列中剩余的任务
+#         process_pending_task()
+        
     def update_problem_status_rejudge(self):
         result = str(self.submission.result)
         problem_id = str(self.problem.id)
