@@ -256,16 +256,19 @@ class JudgeDispatcher(DispatcherBase):
             self.submission.info["data"][i]["result"] = updated_result
             if updated_result == JudgeStatus.ACCEPTED:
                 self.submission.info["data"][i]["score"] = self.problem.test_case_score[i]["score"]
+                logger.error("Binbon " + str(self.submission.info["data"][i]["score"]))
+
             else:
                 self.submission.info["data"][i]["score"] = 0
         logger.error(self.submission.info)            
         if updated_result == JudgeStatus.ACCEPTED:
             self.submission.statistic_info["score"] = self.problem.total_score
+            logger.error("Binbon " + str(self.submission.statistic_info["score"]))
         else:
             self.submission.statistic_info["score"] = 0
         logger.error(self.submission.statistic_info)            
 
-        self.submission.save()
+        self.submission.save(update_fields=["result", "statistic_info", "info"])
 
 #         else:
 #             resp["data"].sort(key=lambda x: int(x["test_case"]))
