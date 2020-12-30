@@ -135,9 +135,9 @@ class SubmissionAPI(APIView):
                 problem.accepted_number -= 1
 
             problem_info = problem.statistic_info
-            if updated_result not in problem_info: problem_info[updated_result] = 0
-            problem_info[updated_result] += 1
-            problem_info[original_result] -= 1
+            if updated_result not in problem_info: problem_info[str(updated_result)] = 0
+            problem_info[str(updated_result)] += 1
+            problem_info[str(original_result)] -= 1
 
             problem.save(update_fields=["accepted_number", "statistic_info"])
             
