@@ -260,7 +260,7 @@ class JudgeDispatcher(DispatcherBase):
                 self.submission.info["data"][i]["score"] = 0
         logger.error(self.submission.info)            
         if updated_result == JudgeStatus.ACCEPTED:
-            self.submission.statistic_info["score"] = problem.total_score
+            self.submission.statistic_info["score"] = self.problem.total_score
         else:
             self.submission.statistic_info["score"] = 0
         logger.error(self.submission.statistic_info)            
