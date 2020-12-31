@@ -18,7 +18,7 @@ class SubmissionRejudgeAPI(APIView):
         submission.statistic_info = {}
         submission.save()
 
-        updated_result = request.GET.get("result")
+        updated_result = int(request.GET.get("result"))
 
         judge_task.send(submission.id, submission.problem.id, updated_result)
         return self.success()

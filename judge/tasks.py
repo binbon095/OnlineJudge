@@ -11,7 +11,7 @@ def judge_task(submission_id, problem_id, updated_result=None):
     uid = Submission.objects.get(id=submission_id).user_id
     if User.objects.get(id=uid).is_disabled:
         return
-    if not updated_result:
+    if updated_result is None:
         JudgeDispatcher(submission_id, problem_id).judge()
     else:
         JudgeDispatcher(submission_id, problem_id).manual_judge(updated_result)
