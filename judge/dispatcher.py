@@ -250,7 +250,7 @@ class JudgeDispatcher(DispatcherBase):
 #             self.submission.statistic_info["score"] = 0
 # 
 #         elif status == JudgeStatus.WRONG_ANSWER:
-        logger.error("Binbon updated_result" + str(updated_result))
+        logger.error("Binbon updated_result:" + str(updated_result))
         self.submission.result = updated_result
         
         logger.error("Binbon data len" + str(len(self.submission.info["data"])))
@@ -296,10 +296,10 @@ class JudgeDispatcher(DispatcherBase):
                 self.update_contest_problem_status()
                 self.update_contest_rank()
         else:
-            if self.last_result:
-                self.update_problem_status_rejudge()
-            else:
-                self.update_problem_status()
+#             if self.last_result:
+            self.update_problem_status_rejudge()
+#             else:
+#                 self.update_problem_status()
 
 #         # 至此判题结束，尝试处理任务队列中剩余的任务
 #         process_pending_task()
@@ -307,11 +307,17 @@ class JudgeDispatcher(DispatcherBase):
     def update_problem_status_rejudge(self):
         result = str(self.submission.result)
         problem_id = str(self.problem.id)
+        accepted_number = 0
+        if self.last_result != JudgeStatus.ACCEPTED and self.submission.result == JudgeStatus.ACCEPTED:
+            accepted_number = 1
+        elif self.last_result == JudgeStatus.ACCEPTED and self.submission.result != JudgeStatus.ACCEPTED:
+            accepted_number = -1
         with transaction.atomic():
             # update problem status
             problem = Problem.objects.select_for_update().get(contest_id=self.contest_id, id=self.problem.id)
-            if self.last_result != JudgeStatus.ACCEPTED and self.submission.result == JudgeStatus.ACCEPTED:
-                problem.accepted_number += 1
+            problem.accepted_number += accepted_number
+#             if self.last_result != JudgeStatus.ACCEPTED and self.submission.result == JudgeStatus.ACCEPTED:
+#                 problem.accepted_number += 1
             problem_info = problem.statistic_info
             problem_info[self.last_result] = problem_info.get(self.last_result, 1) - 1
             problem_info[result] = problem_info.get(result, 0) + 1
@@ -322,8 +328,9 @@ class JudgeDispatcher(DispatcherBase):
                 acm_problems_status = profile.acm_problems_status.get("problems", {})
                 if acm_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
                     acm_problems_status[problem_id]["status"] = self.submission.result
-                    if self.submission.result == JudgeStatus.ACCEPTED:
-                        profile.accepted_number += 1
+                    profile.accepted_number += accepted_number
+#                     if self.submission.result == JudgeStatus.ACCEPTED:
+#                         profile.accepted_number += 1
                 profile.acm_problems_status["problems"] = acm_problems_status
                 profile.save(update_fields=["accepted_number", "acm_problems_status"])
 
@@ -336,8 +343,9 @@ class JudgeDispatcher(DispatcherBase):
                                       last_time_score=oi_problems_status[problem_id]["score"])
                     oi_problems_status[problem_id]["score"] = score
                     oi_problems_status[problem_id]["status"] = self.submission.result
-                    if self.submission.result == JudgeStatus.ACCEPTED:
-                        profile.accepted_number += 1
+                    profile.accepted_number += accepted_number      
+#                     if self.submission.result == JudgeStatus.ACCEPTED:
+#                         profile.accepted_number += 1
                 profile.oi_problems_status["problems"] = oi_problems_status
                 profile.save(update_fields=["accepted_number", "oi_problems_status"])
 
