@@ -326,9 +326,9 @@ class JudgeDispatcher(DispatcherBase):
             profile = User.objects.select_for_update().get(id=self.submission.user_id).userprofile
             if problem.rule_type == ProblemRuleType.ACM:
                 acm_problems_status = profile.acm_problems_status.get("problems", {})
-                if acm_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
-                    acm_problems_status[problem_id]["status"] = self.submission.result
-                    profile.accepted_number += accepted_number
+#                 if acm_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
+                acm_problems_status[problem_id]["status"] = self.submission.result
+                profile.accepted_number += accepted_number
 #                     if self.submission.result == JudgeStatus.ACCEPTED:
 #                         profile.accepted_number += 1
                 profile.acm_problems_status["problems"] = acm_problems_status
@@ -337,13 +337,13 @@ class JudgeDispatcher(DispatcherBase):
             else:
                 oi_problems_status = profile.oi_problems_status.get("problems", {})
                 score = self.submission.statistic_info["score"]
-                if oi_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
-                    # minus last time score, add this tim score
-                    profile.add_score(this_time_score=score,
-                                      last_time_score=oi_problems_status[problem_id]["score"])
-                    oi_problems_status[problem_id]["score"] = score
-                    oi_problems_status[problem_id]["status"] = self.submission.result
-                    profile.accepted_number += accepted_number      
+#                 if oi_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
+                # minus last time score, add this tim score
+                profile.add_score(this_time_score=score,
+                                  last_time_score=oi_problems_status[problem_id]["score"])
+                oi_problems_status[problem_id]["score"] = score
+                oi_problems_status[problem_id]["status"] = self.submission.result
+                profile.accepted_number += accepted_number      
 #                     if self.submission.result == JudgeStatus.ACCEPTED:
 #                         profile.accepted_number += 1
                 profile.oi_problems_status["problems"] = oi_problems_status
