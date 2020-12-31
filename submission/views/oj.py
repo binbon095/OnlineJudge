@@ -118,79 +118,12 @@ class SubmissionAPI(APIView):
         except Submission.DoesNotExist:
             return self.error("Submission doesn't exist")
         
-        if request.data["cmd"] == "updateResult":
-            
-            problem = submission.problem
-
-            original_result = submission.result
-            updated_result = request.data["result"]
-            original_score = submission.statistic_info["score"]
-            update_score = 0
-            if updated_result == JudgeStatus.ACCEPTED: update_score = problem.total_score
-            
-            # update problem
-            if original_result != JudgeStatus.ACCEPTED and updated_result == JudgeStatus.ACCEPTED:
-                problem.accepted_number += 1
-            elif original_result == JudgeStatus.ACCEPTED and updated_result != JudgeStatus.ACCEPTED:
-                problem.accepted_number -= 1
-
-            problem_info = problem.statistic_info
-            if updated_result not in problem_info: problem_info[str(updated_result)] = 0
-            problem_info[str(updated_result)] += 1
-            problem_info[str(original_result)] -= 1
-
-            problem.save(update_fields=["accepted_number", "statistic_info"])
-            
-            # update submission
-            submission.statistic_info["score"] = update_score
-            submission.result = updated_result
-            for i in range(len(submission.info["data"])):
-                submission.info["data"][i]["result"] = updated_result
-                if updated_result == JudgeStatus.ACCEPTED:
-                    submission.info["data"][i]["score"] = problem.test_case_score[i]["score"]
-                else:
-                    submission.info["data"][i]["score"] = 0
-                
-            submission.save(update_fields=["result", "statistic_info", "info"])
-            
-            # update profile
-            try:
-                profile = User.objects.get(id=submission.user_id).userprofile
-            except User.DoesNotExist:
-                return self.error("User does not exist")
-            
-            if original_result != JudgeStatus.ACCEPTED and updated_result == JudgeStatus.ACCEPTED:
-                profile.accepted_number += 1
-            elif original_result == JudgeStatus.ACCEPTED and updated_result != JudgeStatus.ACCEPTED:
-                profile.accepted_number -= 1
-                
-            problemkey = "problems"
-            if submission.contest: problemkey = "contest_problems"
-            if problem.rule_type == ProblemRuleType.ACM:
-                acm_problem_status = profile.acm_problems_status[problemkey][str(problem.id)]
-                if acm_problem_status is None: return self.error(problemkey + " " + str(problem.id) + " does not exist")
-                acm_problem_status["status"] = updated_result
-                profile.save(update_fields=["accepted_number", "acm_problems_status"])
- 
-            else:
-                oi_problem_status = profile.oi_problems_status[problemkey][str(problem.id)]
-                if oi_problem_status is None: return self.error(problemkey + " " + str(problem.id) + " does not exist")
-    
-                # minus last time score, add this tim score
-                profile.add_score(this_time_score=update_score, last_time_score=original_score)
-                oi_problem_status["score"] = update_score
-                oi_problem_status["status"] = updated_result
-            
-                profile.save(update_fields=["accepted_number", "oi_problems_status", "total_score"])
-
-            
-        else:
-            if not submission.check_user_permission(request.user, check_share=False):
-                return self.error("No permission to share the submission")
-            if submission.contest and submission.contest.status == ContestStatus.CONTEST_UNDERWAY:
-                return self.error("Can not share submission now")
-            submission.shared = request.data["shared"]
-            submission.save(update_fields=["shared"])            
+        if not submission.check_user_permission(request.user, check_share=False):
+            return self.error("No permission to share the submission")
+        if submission.contest and submission.contest.status == ContestStatus.CONTEST_UNDERWAY:
+            return self.error("Can not share submission now")
+        submission.shared = request.data["shared"]
+        submission.save(update_fields=["shared"])            
 
         return self.success()
 
