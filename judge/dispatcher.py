@@ -197,7 +197,7 @@ class JudgeDispatcher(DispatcherBase):
                 self.update_problem_status_rejudge()
             else:
                 self.update_problem_status()
-        self.manual_judge(JudgeStatus.JUDGING)
+        if self.problem.manual_judge: self.manual_judge(JudgeStatus.JUDGING)
         # 至此判题结束，尝试处理任务队列中剩余的任务
         process_pending_task()
 
