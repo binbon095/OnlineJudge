@@ -58,7 +58,8 @@ class CreateOrEditProblemSerializer(serializers.Serializer):
     memory_limit = serializers.IntegerField(min_value=1, max_value=1024)
     languages = LanguageNameMultiChoiceField()
     template = serializers.DictField(child=serializers.CharField(min_length=1))
-    model_solution = serializers.DictField(child=serializers.CharField(min_length=1))    
+    model_solution = serializers.DictField(child=serializers.CharField(min_length=1))
+    manual_judge = serializers.BooleanField()
     rule_type = serializers.ChoiceField(choices=[ProblemRuleType.ACM, ProblemRuleType.OI])
     io_mode = ProblemIOModeSerializer()
     spj = serializers.BooleanField()
@@ -152,6 +153,7 @@ class ExportProblemSerializer(serializers.ModelSerializer):
     spj = serializers.SerializerMethodField()
     template = serializers.SerializerMethodField()
     model_solution = serializers.SerializerMethodField()
+    manual_judge = serializers.BooleanField()
     source = serializers.SerializerMethodField()
     tags = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True)
 
@@ -199,7 +201,7 @@ class ExportProblemSerializer(serializers.ModelSerializer):
         fields = ("display_id", "title", "description", "tags",
                   "input_description", "output_description",
                   "test_case_score", "hint", "time_limit", "memory_limit", "samples",
-                  "template", "model_solution", "spj", "rule_type", "source", "template")
+                  "template", "model_solution", "manual_judge", "spj", "rule_type", "source", "template")
 
 
 class AddContestProblemSerializer(serializers.Serializer):

@@ -54,6 +54,7 @@ class Problem(models.Model):
     languages = JSONField()
     template = JSONField()
     model_solution = JSONField()
+    manual_judge = BooleanField(default=True)
     create_time = models.DateTimeField(auto_now_add=True)
     # we can not use auto_now here
     last_update_time = models.DateTimeField(null=True)
@@ -71,7 +72,7 @@ class Problem(models.Model):
     spj_version = models.TextField(null=True)
     spj_compile_ok = models.BooleanField(default=False)
     rule_type = models.TextField()
-    visible = models.BooleanField(default=True)
+    visible =BooleanField(default=True)
     difficulty = models.TextField()
     tags = models.ManyToManyField(ProblemTag)
     source = models.TextField(null=True)

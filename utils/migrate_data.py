@@ -169,6 +169,7 @@ def import_problems():
             data["rule_type"] = ProblemRuleType.ACM
             data["template"] = {}
             data["model_solution"] = {}
+            data["manual_judge"] = False
             data.pop("total_submit_number")
             data.pop("total_accepted_number")
             tag_ids = data.pop("tags")
