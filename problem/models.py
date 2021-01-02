@@ -72,7 +72,7 @@ class Problem(models.Model):
     spj_version = models.TextField(null=True)
     spj_compile_ok = models.BooleanField(default=False)
     rule_type = models.TextField()
-    visible =BooleanField(default=True)
+    visible = models.BooleanField(default=True)
     difficulty = models.TextField()
     tags = models.ManyToManyField(ProblemTag)
     source = models.TextField(null=True)
