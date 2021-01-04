@@ -202,89 +202,23 @@ class JudgeDispatcher(DispatcherBase):
         process_pending_task()
 
     def manual_judge(self, updated_result):
-#         if status == JudgeStatus.MANUAL_JUDGING:
-#             language = self.submission.language
-#             sub_config = list(filter(lambda item: language == item["name"], SysOptions.languages))[0]
-#             spj_config = {}
-#             if self.problem.spj_code:
-#                 for lang in SysOptions.spj_languages:
-#                     if lang["name"] == self.problem.spj_language:
-#                         spj_config = lang["spj"]
-#                         break
-#      
-#             if language in self.problem.template:
-#                 template = parse_problem_template(self.problem.template[language])
-#                 code = f"{template['prepend']}\n{self.submission.code}\n{template['append']}"
-#             else:
-#                 code = self.submission.code
-#      
-#             data = {
-#                 "language_config": sub_config["config"],
-#                 "src": code,
-#                 "max_cpu_time": self.problem.time_limit,
-#                 "max_memory": 1024 * 1024 * self.problem.memory_limit,
-#                 "test_case_id": self.problem.test_case_id,
-#                 "output": False,
-#                 "spj_version": self.problem.spj_version,
-#                 "spj_config": spj_config.get("config"),
-#                 "spj_compile_config": spj_config.get("compile"),
-#                 "spj_src": self.problem.spj_code,
-#                 "io_mode": self.problem.io_mode
-#             }
-#      
-#             with ChooseJudgeServer() as server:
-#                 if not server:
-#                     data = {"submission_id": self.submission.id, "problem_id": self.problem.id}
-#                     cache.lpush(CacheKey.waiting_queue, json.dumps(data))
-#                     return
-#                 Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.JUDGING)
-#                 resp = self._request(urljoin(server.service_url, "/judge"), data=data)
-#      
-#             if not resp:
-#                 Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.SYSTEM_ERROR)
-#                 return
-# 
-# #             if resp["err"]:
-#             self.submission.result = status
-#             self.submission.statistic_info["err_info"] = resp["data"]
-#             self.submission.statistic_info["score"] = 0
-# 
-#         elif status == JudgeStatus.WRONG_ANSWER:
-        logger.error("Binbon updated_result:" + str(updated_result))
+
+        logger.info("Binbon updated_result:" + str(updated_result))
         self.submission.result = updated_result
         
-        logger.error("Binbon data len" + str(len(self.submission.info["data"])))
         for i in range(len(self.submission.info["data"])):
             self.submission.info["data"][i]["result"] = updated_result
             if updated_result == JudgeStatus.ACCEPTED:
                 self.submission.info["data"][i]["score"] = self.problem.test_case_score[i]["score"]
-                logger.error("Binbon " + str(self.submission.info["data"][i]["score"]))
 
             else:
                 self.submission.info["data"][i]["score"] = 0
-        logger.error(self.submission.info)            
         if updated_result == JudgeStatus.ACCEPTED:
             self.submission.statistic_info["score"] = self.problem.total_score
-            logger.error("Binbon " + str(self.submission.statistic_info["score"]))
         else:
             self.submission.statistic_info["score"] = 0
-        logger.error(self.submission.statistic_info)            
 
         self.submission.save(update_fields=["result", "statistic_info", "info"])
-
-#         else:
-#             resp["data"].sort(key=lambda x: int(x["test_case"]))
-#             self.submission.info = resp
-#             self._compute_statistic_info(resp["data"])
-#             error_test_case = list(filter(lambda case: case["result"] != 0, resp["data"]))
-#             # ACM模式下,多个测试点全部正确则AC，否则取第一个错误的测试点的状态
-#             # OI模式下, 若多个测试点全部正确则AC， 若全部错误则取第一个错误测试点状态，否则为部分正确
-#             if not error_test_case:
-#                 self.submission.result = JudgeStatus.ACCEPTED
-#             elif self.problem.rule_type == ProblemRuleType.ACM or len(error_test_case) == len(resp["data"]):
-#                 self.submission.result = error_test_case[0]["result"]
-#             else:
-#                 self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
 
         if self.contest_id:
             if self.contest.status != ContestStatus.CONTEST_UNDERWAY or \
@@ -296,14 +230,8 @@ class JudgeDispatcher(DispatcherBase):
                 self.update_contest_problem_status()
                 self.update_contest_rank()
         else:
-#             if self.last_result:
             self.update_problem_status_rejudge()
-#             else:
-#                 self.update_problem_status()
-
-#         # 至此判题结束，尝试处理任务队列中剩余的任务
-#         process_pending_task()
-        
+  
     def update_problem_status_rejudge(self):
         result = str(self.submission.result)
         problem_id = str(self.problem.id)
@@ -316,8 +244,6 @@ class JudgeDispatcher(DispatcherBase):
             # update problem status
             problem = Problem.objects.select_for_update().get(contest_id=self.contest_id, id=self.problem.id)
             problem.accepted_number += accepted_number
-#             if self.last_result != JudgeStatus.ACCEPTED and self.submission.result == JudgeStatus.ACCEPTED:
-#                 problem.accepted_number += 1
             problem_info = problem.statistic_info
             problem_info[self.last_result] = problem_info.get(self.last_result, 1) - 1
             problem_info[result] = problem_info.get(result, 0) + 1
@@ -326,26 +252,22 @@ class JudgeDispatcher(DispatcherBase):
             profile = User.objects.select_for_update().get(id=self.submission.user_id).userprofile
             if problem.rule_type == ProblemRuleType.ACM:
                 acm_problems_status = profile.acm_problems_status.get("problems", {})
-#                 if acm_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
                 acm_problems_status[problem_id]["status"] = self.submission.result
                 profile.accepted_number += accepted_number
-#                     if self.submission.result == JudgeStatus.ACCEPTED:
-#                         profile.accepted_number += 1
+
                 profile.acm_problems_status["problems"] = acm_problems_status
                 profile.save(update_fields=["accepted_number", "acm_problems_status"])
 
             else:
                 oi_problems_status = profile.oi_problems_status.get("problems", {})
                 score = self.submission.statistic_info["score"]
-#                 if oi_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
                 # minus last time score, add this tim score
                 profile.add_score(this_time_score=score,
                                   last_time_score=oi_problems_status[problem_id]["score"])
                 oi_problems_status[problem_id]["score"] = score
                 oi_problems_status[problem_id]["status"] = self.submission.result
                 profile.accepted_number += accepted_number      
-#                     if self.submission.result == JudgeStatus.ACCEPTED:
-#                         profile.accepted_number += 1
+
                 profile.oi_problems_status["problems"] = oi_problems_status
                 profile.save(update_fields=["accepted_number", "oi_problems_status"])
 
