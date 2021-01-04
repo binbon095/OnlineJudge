@@ -20,6 +20,9 @@ class SubmissionRejudgeAPI(APIView):
 
         updated_result = request.GET.get("result")
         
-        if not updated_result:
+        if updated_result:
             judge_task.send(submission.id, submission.problem.id, int(updated_result))
+        else:
+            judge_task.send(submission.id, submission.problem.id)
+
         return self.success()
