@@ -9,6 +9,7 @@ from utils.models import RichTextField
 
 
 class Contest(models.Model):
+    _id = models.TextField(db_index=True)
     title = models.TextField()
     description = RichTextField()
     # show real time rank or cached rank
@@ -21,20 +22,20 @@ class Contest(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     last_update_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    # 是否可见 false的话相当于删除
+    # ���閫� false���敶��
     visible = models.BooleanField(default=True)
     allowed_ip_ranges = JSONField(default=list)
 
     @property
     def status(self):
         if self.start_time > now():
-            # 没有开始 返回1
+            # 瘝⊥��憪� 餈��1
             return ContestStatus.CONTEST_NOT_START
         elif self.end_time < now():
-            # 已经结束 返回-1
+            # 撌脩���� 餈��-1
             return ContestStatus.CONTEST_ENDED
         else:
-            # 正在进行 返回0
+            # 甇��餈�� 餈��0
             return ContestStatus.CONTEST_UNDERWAY
 
     @property
@@ -43,7 +44,7 @@ class Contest(models.Model):
             return ContestType.PASSWORD_PROTECTED_CONTEST
         return ContestType.PUBLIC_CONTEST
 
-    # 是否有权查看problem 的一些统计信息 诸如submission_number, accepted_number 等
+    # �������roblem ���鈭�恣靽⊥ 霂詨�ubmission_number, accepted_number 蝑�
     def problem_details_permission(self, user):
         return self.rule_type == ContestRuleType.ACM or \
                self.status == ContestStatus.CONTEST_ENDED or \

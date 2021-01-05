@@ -5,6 +5,7 @@ from .models import ACMContestRank, OIContestRank
 
 
 class CreateConetestSeriaizer(serializers.Serializer):
+    _id = serializers.CharField(max_length=32, allow_blank=True, allow_null=True)
     title = serializers.CharField(max_length=128)
     description = serializers.CharField()
     start_time = serializers.DateTimeField()
@@ -17,6 +18,7 @@ class CreateConetestSeriaizer(serializers.Serializer):
 
 
 class EditConetestSeriaizer(serializers.Serializer):
+    _id = serializers.CharField(max_length=32, allow_blank=True, allow_null=True)
     id = serializers.IntegerField()
     title = serializers.CharField(max_length=128)
     description = serializers.CharField()
