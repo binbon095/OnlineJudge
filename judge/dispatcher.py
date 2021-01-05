@@ -181,6 +181,13 @@ class JudgeDispatcher(DispatcherBase):
                 self.submission.result = error_test_case[0]["result"]
             else:
                 self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
+        
+        if self.problem.manual_judge:
+            for i in range(len(self.submission.info["data"])):
+                self.submission.info["data"][i]["result"] = JudgeStatus.JUDGING
+                self.submission.info["data"][i]["score"] = 0
+            self.submission.statistic_info["score"] = 0
+                
         self.submission.save()
 
         if self.contest_id:
@@ -197,7 +204,7 @@ class JudgeDispatcher(DispatcherBase):
                 self.update_problem_status_rejudge()
             else:
                 self.update_problem_status()
-        if self.problem.manual_judge: self.manual_judge(JudgeStatus.JUDGING)
+
         # 至此判题结束，尝试处理任务队列中剩余的任务
         process_pending_task()
 
@@ -220,17 +227,8 @@ class JudgeDispatcher(DispatcherBase):
 
         self.submission.save(update_fields=["result", "statistic_info", "info"])
 
-        if self.contest_id:
-            if self.contest.status != ContestStatus.CONTEST_UNDERWAY or \
-                    User.objects.get(id=self.submission.user_id).is_contest_admin(self.contest):
-                logger.info(
-                    "Contest debug mode, id: " + str(self.contest_id) + ", submission id: " + self.submission.id)
-                return
-            with transaction.atomic():
-                self.update_contest_problem_status()
-                self.update_contest_rank()
-        else:
-            self.update_problem_status_rejudge()
+        # manual judge not support contest problemm
+        self.update_problem_status_rejudge()
   
     def update_problem_status_rejudge(self):
         result = str(self.submission.result)
