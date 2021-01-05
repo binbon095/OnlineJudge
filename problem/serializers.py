@@ -257,6 +257,7 @@ class ImportProblemSerializer(serializers.Serializer):
     samples = serializers.ListField(child=CreateSampleSerializer())
     template = serializers.DictField(child=TemplateSerializer())
     model_solution = serializers.DictField()
+    manual_judge = serializers.BooleanField()
     spj = SPJSerializer(allow_null=True)
     rule_type = serializers.ChoiceField(choices=ProblemRuleType.choices())
     source = serializers.CharField(max_length=200, allow_blank=True, allow_null=True)

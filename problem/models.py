@@ -54,7 +54,7 @@ class Problem(models.Model):
     languages = JSONField()
     template = JSONField()
     model_solution = JSONField()
-    manual_judge = models.BooleanField(default=True)
+    manual_judge = models.BooleanField(default=False)
     create_time = models.DateTimeField(auto_now_add=True)
     # we can not use auto_now here
     last_update_time = models.DateTimeField(null=True)
