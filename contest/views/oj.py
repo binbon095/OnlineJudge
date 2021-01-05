@@ -48,7 +48,7 @@ class ContestAPI(APIView):
 
 class ContestListAPI(APIView):
     def get(self, request):
-        contests = Contest.objects.select_related("created_by").filter(visible=True)
+        contests = Contest.objects.select_related("created_by").filter(visible=True).order_by('_id')
         keyword = request.GET.get("keyword")
         rule_type = request.GET.get("rule_type")
         status = request.GET.get("status")
