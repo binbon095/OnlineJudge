@@ -183,6 +183,9 @@ class JudgeDispatcher(DispatcherBase):
                 self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
         
         if self.problem.manual_judge:
+            logger.info("Binbon problem manual judge:" + str(len(self.submission.info["data"])))
+            self.submission.result = JudgeStatus.JUDGING
+
             for i in range(len(self.submission.info["data"])):
                 self.submission.info["data"][i]["result"] = JudgeStatus.JUDGING
                 self.submission.info["data"][i]["score"] = 0
