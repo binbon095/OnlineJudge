@@ -121,7 +121,7 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         try:
             problem = Problem.objects.get(id=problem_id)
         except Problem.DoesNotExist:
-            return self.error("Problem does not exists")
+            return self.error("Problem does not exists, id:" + problem_id)
 
         if problem.contest:
             ensure_created_by(problem.contest, request.user)
