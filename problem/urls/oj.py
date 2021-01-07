@@ -1,7 +1,7 @@
 from django.conf.urls import url
 
-from ..views.oj import ProblemTagAPI, ProblemAPI, ContestProblemAPI, PickOneAPI
-from ..views.admin import TestCaseAPI
+from ..views.oj import ProblemTagAPI, ProblemAPI, ContestProblemAPI, PickOneAPI, TestCaseAPI
+# from ..views.admin import TestCaseAPI
 
 urlpatterns = [
     url(r"^test_case/?$", TestCaseAPI.as_view(), name="test_case_api"),    

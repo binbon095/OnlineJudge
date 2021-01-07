@@ -121,7 +121,7 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         try:
             problem = Problem.objects.get(id=problem_id)
         except Problem.DoesNotExist:
-            return self.error("Problem does not exists, id:" + problem_id)
+            return self.error("Problem does not exist, id:" + problem_id)
 
         if problem.contest:
             ensure_created_by(problem.contest, request.user)
@@ -130,7 +130,7 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
 
         test_case_dir = os.path.join(settings.TEST_CASE_DIR, problem.test_case_id)
         if not os.path.isdir(test_case_dir):
-            return self.error("Test case does not exists")
+            return self.error("Test case does not exist")
         name_list = self.filter_name_list(os.listdir(test_case_dir), problem.spj)
         name_list.append("info")
         file_name = os.path.join(test_case_dir, problem.test_case_id + ".zip")
