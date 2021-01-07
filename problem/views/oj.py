@@ -1,6 +1,6 @@
 import random
 from django.db.models import Q, Count
-from utils.api import APIView
+from utils.api import APIView, CSRFExemptAPIView
 from account.decorators import check_contest_permission
 from ..models import ProblemTag, Problem, ProblemRuleType
 from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer
